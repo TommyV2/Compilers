@@ -9,11 +9,22 @@ class MyVisitor(MyGrammerVisitor):
         value = ctx.getText()
         return int(value)
 
+    def visitFloatExpr(self, ctx):
+        value = ctx.getText()
+        return float(value)
+    
+    def visitStringExpr(self, ctx):
+        value = ctx.getText()[1:-1]
+        return value
+
     def visitParenExpr(self, ctx):
         return self.visit(ctx.expr())
 
     def visitReadExpr(self, ctx):
-        return "I'm reading..."
+        return f"I'm reading: {self.visit(ctx.value)}"
+    
+    def visitPrintExpr(self, ctx):
+        return f"{self.visit(ctx.value)}"
 
     def visitInfixExpr(self, ctx):
         l = self.visit(ctx.left)
