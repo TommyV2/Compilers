@@ -3,8 +3,11 @@ from antlr4 import *
 from dist.MyGrammerLexer import MyGrammerLexer
 from dist.MyGrammerParser import MyGrammerParser
 from dist.MyGrammerVisitor import MyGrammerVisitor
-  
+
+
 class MyVisitor(MyGrammerVisitor):
+    dict = {}
+
     def visitNumberExpr(self, ctx):
         value = ctx.getText()
         return int(value)
@@ -17,6 +20,10 @@ class MyVisitor(MyGrammerVisitor):
         value = ctx.getText()[1:-1]
         return value
 
+    def visitVariableExpr(self, ctx):
+        value = ctx.getText()
+        return value
+
     def visitParenExpr(self, ctx):
         return self.visit(ctx.expr())
 
@@ -24,7 +31,13 @@ class MyVisitor(MyGrammerVisitor):
         return f"I'm reading: {self.visit(ctx.value)}"
     
     def visitPrintExpr(self, ctx):
-        return f"{self.visit(ctx.value)}"
+        value = self.dict[self.visit(ctx.value)]
+        return value
+
+    def visitAssignExpr(self, ctx):
+        variable_name = self.visit(ctx.left)
+        value = self.visit(ctx.right)
+        self.dict[variable_name] = value
 
     def visitInfixExpr(self, ctx):
         l = self.visit(ctx.left)
