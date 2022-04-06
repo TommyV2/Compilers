@@ -16,10 +16,10 @@ expr: left=expr op=('*'|'/') right=expr        # InfixExpr
     ;
 
 NEWLINE : [\r\n]+ ;
-VARIABLE : [a-z]+    ;
 READ   : ('read'|'READ') ;
 PRINT  : ('print'|'PRINT') ;
 EXIT    : ('exit'| 'EXIT') ;
+VARIABLE : [a-z]+    ;
 INT    : [0-9]+          ;
 FLOAT  : [-]?([0-9]*[.])?[0-9]+ ;
 STRING : '"' .*? '"'      ;
