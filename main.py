@@ -58,8 +58,6 @@ def execute_command(data):
 
 if __name__ == "__main__":
     file_name = ''
-    # '2 + 2'
-    # file input
     if len(sys.argv) > 1:
         file_name = sys.argv[1]
         data = ''
@@ -67,17 +65,6 @@ if __name__ == "__main__":
             for line in file:
                 data = InputStream(f'{line.rstrip()}')
                 execute_command(data)
-                # lexer = MyGrammerLexer(data)
-                # stream = CommonTokenStream(lexer)
-                # # parser
-                # parser = MyGrammerParser(stream)
-                # tree = parser.expr()
-                # # evaluator
-                # visitor = MyVisitor()
-                # output = visitor.visit(tree)
-                
-                # print(output)
-    # console mode input  
     else:
         while 1:
             data =  InputStream(input(">>> "))
