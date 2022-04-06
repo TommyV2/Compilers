@@ -39,24 +39,46 @@ class MyVisitor(MyGrammerVisitor):
         }
         return operation.get(op, lambda: None)()
 
-    def visitByeExpr(self, ctx):
-        print(f"goodbye")
+    def visitExitExpr(self, ctx):
+        print(f"exit")
         sys.exit(0)
 
-    def visitHelloExpr(self, ctx):
-        return (f"{ctx.getText()}")
-
+def execute_command(data):
+    # lexer
+    lexer = MyGrammerLexer(data)
+    stream = CommonTokenStream(lexer)
+    # parser
+    parser = MyGrammerParser(stream)
+    tree = parser.expr()
+    # evaluator
+    visitor = MyVisitor()
+    output = visitor.visit(tree)
+    
+    print(output)
 
 if __name__ == "__main__":
-    while 1:
-        data =  InputStream(input(">>> "))
-        # lexer
-        lexer = MyGrammerLexer(data)
-        stream = CommonTokenStream(lexer)
-        # parser
-        parser = MyGrammerParser(stream)
-        tree = parser.expr()
-        # evaluator
-        visitor = MyVisitor()
-        output = visitor.visit(tree)
-        print(output)
+    file_name = ''
+    # '2 + 2'
+    # file input
+    if len(sys.argv) > 1:
+        file_name = sys.argv[1]
+        data = ''
+        with open(file_name, mode='r') as file:
+            for line in file:
+                data = InputStream(f'{line.rstrip()}')
+                execute_command(data)
+                # lexer = MyGrammerLexer(data)
+                # stream = CommonTokenStream(lexer)
+                # # parser
+                # parser = MyGrammerParser(stream)
+                # tree = parser.expr()
+                # # evaluator
+                # visitor = MyVisitor()
+                # output = visitor.visit(tree)
+                
+                # print(output)
+    # console mode input  
+    else:
+        while 1:
+            data =  InputStream(input(">>> "))
+            execute_command(data)

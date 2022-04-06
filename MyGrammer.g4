@@ -5,16 +5,14 @@ expr: left=expr op=('*'|'/') right=expr        # InfixExpr
     | atom=FLOAT                               # FloatExpr
     | atom=STRING                              # StringExpr
     | '(' expr ')'                             # ParenExpr 
-    | atom=HELLO                               # HelloExpr
-    | atom=BYE                                 # ByeExpr
+    | atom=EXIT                                 # ExitExpr
     | READ value=expr                          # ReadExpr
     | PRINT value=expr                         # PrintExpr
     ;
 
-HELLO  : ('hello'|'hi')  ;
 READ   : ('read'|'READ') ;
 PRINT  : ('print'|'PRINT') ;
-BYE    : ('bye'| 'tata') ;
+EXIT    : ('exit'| 'EXIT') ;
 INT    : [0-9]+          ;
 FLOAT  : [-]?([0-9]*[.])?[0-9]+ ;
 STRING : '"' .*? '"'      ;
