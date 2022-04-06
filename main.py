@@ -55,11 +55,13 @@ def execute_command(data):
     output = visitor.visit(tree)
     
     print(output)
+    
 
 if __name__ == "__main__":
     file_name = ''
-    if len(sys.argv) > 1:
-        file_name = sys.argv[1]
+    if len(sys.argv) > 0:
+        # file_name = sys.argv[1]
+        file_name = 'test.xd'
         data = ''
         with open(file_name, mode='r') as file:
             for line in file:

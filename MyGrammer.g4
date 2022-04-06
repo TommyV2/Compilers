@@ -1,4 +1,7 @@
 grammar MyGrammer;
+
+start:	(expr NEWLINE)* ;
+
 expr: left=expr op=('*'|'/') right=expr        # InfixExpr
     | left=expr op=('+'|'-') right=expr        # InfixExpr
     | atom=INT                                 # NumberExpr
@@ -10,6 +13,7 @@ expr: left=expr op=('*'|'/') right=expr        # InfixExpr
     | PRINT value=expr                         # PrintExpr
     ;
 
+NEWLINE : [\r\n]+ ;
 READ   : ('read'|'READ') ;
 PRINT  : ('print'|'PRINT') ;
 EXIT    : ('exit'| 'EXIT') ;
