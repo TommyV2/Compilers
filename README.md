@@ -6,7 +6,7 @@ java -jar antlr-4.9.2-complete.jar -Dlanguage=Python3 MyGrammer.g4 -visitor -o d
 
 ## To generate tree:
 
-### to najlepiej w nowym folderze robic ze skopiwaną gramatyką i plikiem wejściowym
+#### to najlepiej w nowym folderze robic ze skopiwaną gramatyką i plikiem wejściowym
 
 java -jar antlr-4.9.2-complete.jar MyGrammer.g4
 javac  MyGrammer*.java 
