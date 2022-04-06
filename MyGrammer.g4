@@ -4,12 +4,15 @@ expr: left=expr op=('*'|'/') right=expr        # InfixExpr
     | atom=INT                                 # NumberExpr
     | atom=FLOAT                               # FloatExpr
     | atom=STRING                              # StringExpr
+    | atom=VARIABLE                              # VariableExpr
     | '(' expr ')'                             # ParenExpr 
     | atom=EXIT                                 # ExitExpr
     | READ value=expr                          # ReadExpr
     | PRINT value=expr                         # PrintExpr
+    | left=expr op=('='|':=') right=expr         # AssignExpr
     ;
 
+VARIABLE : [a-z]+    ;
 READ   : ('read'|'READ') ;
 PRINT  : ('print'|'PRINT') ;
 EXIT    : ('exit'| 'EXIT') ;
