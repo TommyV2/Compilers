@@ -11,7 +11,8 @@ expr: left=expr op=('*'|'/') right=expr        # InfixExpr
     | atom=VARIABLE                              # VariableExpr
     | '(' expr ')'                             # ParenExpr
     | READ value=expr                          # ReadExpr
-    | PRINT value=expr                         # PrintExpr
+    | PRINT value=VARIABLE                         # PrintVarExpr
+    | PRINT value=STRING                         # PrintStringExpr
     | left=expr op=('='|':=') right=expr         # AssignExpr
     ;
 

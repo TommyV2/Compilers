@@ -29,10 +29,16 @@ class MyVisitor(MyGrammerVisitor):
 
     def visitReadExpr(self, ctx):
         return f"I'm reading: {self.visit(ctx.value)}"
+
+    def visitPrintStringExpr(self, ctx):
+        return ctx.value.text[1:-1]
     
-    def visitPrintExpr(self, ctx):
-        value = self.dict[self.visit(ctx.value)]
-        return value
+    def visitPrintVarExpr(self, ctx):
+        try:
+            value = self.dict[ctx.value.text]
+            return value
+        except KeyError:
+            return "Variable not defined: " + ctx.value.text
 
     def visitAssignExpr(self, ctx):
         variable_name = self.visit(ctx.left)
@@ -47,13 +53,13 @@ class MyVisitor(MyGrammerVisitor):
             try:
                 l = self.dict[l]
             except KeyError as error:
-                raise KeyError("Variable not defined: " + l)
+                return "Variable not defined: " + l
 
         if not str(r).isdigit():
             try:
                 r = self.dict[r]
             except KeyError as error:
-                raise KeyError("Variable not defined: " + r)
+                return "Variable not defined: " + r
 
         op = ctx.op.text
         operation =  {
