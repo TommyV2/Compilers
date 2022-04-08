@@ -43,6 +43,18 @@ class MyVisitor(MyGrammerVisitor):
         l = self.visit(ctx.left)
         r = self.visit(ctx.right)
 
+        if not str(l).isdigit():
+            try:
+                l = self.dict[l]
+            except KeyError as error:
+                raise KeyError("Variable not defined: " + l)
+
+        if not str(r).isdigit():
+            try:
+                r = self.dict[r]
+            except KeyError as error:
+                raise KeyError("Variable not defined: " + r)
+
         op = ctx.op.text
         operation =  {
         '+': lambda: l + r,
@@ -53,7 +65,6 @@ class MyVisitor(MyGrammerVisitor):
         return operation.get(op, lambda: None)()
 
     def visitExitExpr(self, ctx):
-        print(f"exit")
         sys.exit(0)
 
 def execute_command(data):
