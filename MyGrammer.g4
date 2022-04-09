@@ -7,7 +7,7 @@ expr: left=expr op=('*'|'/') right=expr        # InfixExpr
     | atom=INT                                 # NumberExpr
     | atom=FLOAT                               # FloatExpr
     | atom=STRING                              # StringExpr
-    | atom=VARIABLE                              # VariableExpr
+    | atom=VRIABLEA                              # VariableExpr
     | '(' expr ')'                             # ParenExpr 
     | atom=EXIT                                 # ExitExpr
     | READ value=expr                          # ReadExpr

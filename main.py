@@ -63,6 +63,7 @@ def execute_command(data):
     # parser
     parser = MyGrammerParser(stream)
     tree = parser.expr()
+
     # evaluator
     visitor = MyVisitor()
     output = visitor.visit(tree)
