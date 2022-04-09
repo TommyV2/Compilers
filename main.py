@@ -3,7 +3,9 @@ from antlr4 import *
 from dist.MyGrammerLexer import MyGrammerLexer
 from dist.MyGrammerParser import MyGrammerParser
 from dist.MyGrammerVisitor import MyGrammerVisitor
+from llvm_generator import LLVMGenerator
 
+llvm_generator = LLVMGenerator()
 
 class MyVisitor(MyGrammerVisitor):
     dict = {}
@@ -31,11 +33,14 @@ class MyVisitor(MyGrammerVisitor):
         return f"I'm reading: {self.visit(ctx.value)}"
 
     def visitPrintStringExpr(self, ctx):
-        return ctx.value.text[1:-1]
+        value = ctx.value.text[1:-1]
+        llvm_generator.print(value)
+        return value
     
     def visitPrintVariableExpr(self, ctx):
         try:
             value = self.dict[ctx.value.text]
+            llvm_generator.print(value)
             return value
         except KeyError:
             return "Variable not defined: " + ctx.value.text
@@ -44,6 +49,8 @@ class MyVisitor(MyGrammerVisitor):
         variable_name = self.visit(ctx.left)
         value = self.visit(ctx.right)
         self.dict[variable_name] = value
+        llvm_generator.declare(variable_name)
+        llvm_generator.assign(variable_name, value)
 
     def visitInfixExpr(self, ctx):
         l = self.visit(ctx.left)
@@ -69,6 +76,7 @@ class MyVisitor(MyGrammerVisitor):
         return operation.get(op, lambda: None)()
 
     def visitExitExpr(self, ctx):
+        print(llvm_generator.generate())
         sys.exit(0)
 
 def execute_command(data):
