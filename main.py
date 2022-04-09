@@ -33,7 +33,7 @@ class MyVisitor(MyGrammerVisitor):
     def visitPrintStringExpr(self, ctx):
         return ctx.value.text[1:-1]
     
-    def visitPrintVarExpr(self, ctx):
+    def visitPrintVariableExpr(self, ctx):
         try:
             value = self.dict[ctx.value.text]
             return value
@@ -49,17 +49,15 @@ class MyVisitor(MyGrammerVisitor):
         l = self.visit(ctx.left)
         r = self.visit(ctx.right)
 
+        x = ctx.left.getText()[0]
         if not str(l).isdigit():
-            try:
+            if ctx.left.getText()[0] != '"':
                 l = self.dict[l]
-            except KeyError as error:
-                return "Variable not defined: " + l
+
 
         if not str(r).isdigit():
-            try:
-                r = self.dict[r]
-            except KeyError as error:
-                return "Variable not defined: " + r
+            if ctx.right.getText()[0] != '"':
+                r =  self.dict[r]
 
         op = ctx.op.text
         operation =  {
@@ -80,12 +78,11 @@ def execute_command(data):
     # parser
     parser = MyGrammerParser(stream)
     tree = parser.expr()
-
     # evaluator
     visitor = MyVisitor()
     output = visitor.visit(tree)
-    
-    print(output)
+    if output != None:
+        print(output)
     
 
 if __name__ == "__main__":
