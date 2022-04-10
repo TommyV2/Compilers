@@ -20,6 +20,7 @@ NEWLINE : [\r\n]+ ;
 READ   : ('read'|'READ') ;
 PRINT  : ('print'|'PRINT') ;
 EXIT    : ('exit'| 'EXIT') ;
+ARRAY_INSIDE : '[' .*? ']'      ;
 VARIABLE : [a-z]+    ;
 INT    : [0-9]+          ;
 FLOAT  : [-]?([0-9]*[.])?[0-9]+ ;

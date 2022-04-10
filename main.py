@@ -1,5 +1,6 @@
 import sys
 from antlr4 import *
+from sqlalchemy import true
 from dist.MyGrammerLexer import MyGrammerLexer
 from dist.MyGrammerParser import MyGrammerParser
 from dist.MyGrammerVisitor import MyGrammerVisitor
@@ -30,7 +31,13 @@ class MyVisitor(MyGrammerVisitor):
         return self.visit(ctx.expr())
 
     def visitReadExpr(self, ctx):
-        return f"I'm reading: {self.visit(ctx.value)}"
+        var_name = self.visit(ctx.value)
+        input_value = input(f"Input value for '{var_name}': ")
+        if input_value.isdigit():
+            self.dict[var_name] = float(input_value)
+        else:
+            self.dict[var_name] = input_value
+        llvm_generator.scanf(input_value)
 
     def visitPrintStringExpr(self, ctx):
         value = ctx.value.text[1:-1]
@@ -49,22 +56,35 @@ class MyVisitor(MyGrammerVisitor):
         variable_name = self.visit(ctx.left)
         value = self.visit(ctx.right)
         self.dict[variable_name] = value
-        llvm_generator.declare(variable_name)
-        llvm_generator.assign(variable_name, value)
+        if '.' in str(value):
+            llvm_generator.declare_double(variable_name)
+            llvm_generator.assign_double(variable_name, value)
+        else:
+            llvm_generator.declare(variable_name)
+            llvm_generator.assign(variable_name, value)
 
     def visitInfixExpr(self, ctx):
         l = self.visit(ctx.left)
         r = self.visit(ctx.right)
-
         x = ctx.left.getText()[0]
-        if not str(l).isdigit():
-            if ctx.left.getText()[0] != '"':
-                l = self.dict[l]
+        l_is_float = True
+        r_is_float = True
 
+        if ctx.left.getText()[0] != '"' and not ctx.left.getText()[0].isdigit():
+            l = self.dict[l]
 
-        if not str(r).isdigit():
-            if ctx.right.getText()[0] != '"':
-                r =  self.dict[r]
+        if ctx.right.getText()[0] != '"' and not ctx.right.getText()[0].isdigit():
+            r =  self.dict[r]
+
+        try:
+            l = float(l)
+        except:
+            l_is_float = False
+        
+        try:
+            r = float(r)
+        except:
+            r_is_float = False
 
         op = ctx.op.text
         operation =  {
@@ -73,6 +93,14 @@ class MyVisitor(MyGrammerVisitor):
         '*': lambda: l * r,
         '/': lambda: l / r,
         }
+
+        if l_is_float or r_is_float:
+            llvm_generator.add_double(float(l), float(r))
+        else:
+            llvm_generator.add(l,r)
+        # TODO add string adding
+        # TODO add '-' '*' '/' operations
+
         return operation.get(op, lambda: None)()
 
     def visitExitExpr(self, ctx):
