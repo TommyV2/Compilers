@@ -70,11 +70,15 @@ class MyVisitor(MyGrammerVisitor):
         l_is_float = True
         r_is_float = True
 
-        if ctx.left.getText()[0] != '"' and not ctx.left.getText()[0].isdigit():
-            l = self.dict[l]
-
-        if ctx.right.getText()[0] != '"' and not ctx.right.getText()[0].isdigit():
-            r =  self.dict[r]
+        try:
+            l = self.dict[l]  
+        except:
+            pass    
+        try:
+            r = self.dict[r]  
+        except:
+            pass   
+        
 
         try:
             l = float(l)
@@ -93,11 +97,16 @@ class MyVisitor(MyGrammerVisitor):
         '*': lambda: l * r,
         '/': lambda: l / r,
         }
-
         if l_is_float or r_is_float:
-            llvm_generator.add_double(float(l), float(r))
+            if op == '+':
+                llvm_generator.add_double(float(l), float(r))
+            elif op == '*':
+                llvm_generator.mult_double(float(l), float(r))
         else:
-            llvm_generator.add(l,r)
+            if op == '+':
+                llvm_generator.add(int(l),int(r))
+            elif op == '*':
+                llvm_generator.mult_double(float(l), float(l))
         # TODO add string adding
         # TODO add '-' '*' '/' operations
 

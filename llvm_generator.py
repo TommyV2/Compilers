@@ -33,8 +33,7 @@ class LLVMGenerator:
         self.main_text += "store i32 "+str(value)+", i32* %"+id+"\n"
    
     def add(self, val1, val2):
-        self.main_text += "%"+str(self.reg)+" = add i32 "+str(val1)+", "+str(val2)+"\n"
-        self.reg += 1
+        self.main_text += "add i32 "+str(val1)+", "+str(val2)+"\n"
     
     def declare_double(self, id):
         self.main_text += "%"+id+" = alloca double\n"
@@ -43,8 +42,18 @@ class LLVMGenerator:
         self.main_text += "store double "+str(value)+", double* %"+id+"\n"
    
     def add_double(self, val1, val2):
-        self.main_text += "%"+str(self.reg)+" = fadd double "+str(val1)+", "+str(val2)+"\n"
+        self.main_text += "fadd double "+str(val1)+", "+str(val2)+"\n"
         self.reg += 1
+
+    def mult_i32(self, val1, val2):
+        self.main_text += "mul i32 "+str(val1)+", "+str(val2)+"\n"
+        self.reg += 1
+   
+
+    def mult_double(self, val1, val2):
+        self.main_text += "fmul double "+str(val1)+", "+str(val2)+"\n"
+        self.reg += 1
+   
     
     def generate(self):
         text = ""
