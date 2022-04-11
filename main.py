@@ -102,17 +102,26 @@ class MyVisitor(MyGrammerVisitor):
                 llvm_generator.add_double(float(l), float(r))
             elif op == '*':
                 llvm_generator.mult_double(float(l), float(r))
+            elif op == '-':
+                llvm_generator.sub_double(float(l), float(r))
+            elif op == '/':
+                llvm_generator.div_double(float(l), float(r))
         else:
             if op == '+':
                 llvm_generator.add(int(l),int(r))
             elif op == '*':
                 llvm_generator.mult_double(float(l), float(l))
+            elif op == '-':
+                llvm_generator.sub(float(l), float(r))
+            elif op == '/':
+                llvm_generator.div(float(l), float(r))
         # TODO add string adding
         # TODO add '-' '*' '/' operations
 
         return operation.get(op, lambda: None)()
 
     def visitExitExpr(self, ctx):
+        print('-------------------------------------')
         print(llvm_generator.generate())
         sys.exit(0)
 

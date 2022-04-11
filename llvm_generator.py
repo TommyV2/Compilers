@@ -35,6 +35,18 @@ class LLVMGenerator:
     def add(self, val1, val2):
         self.main_text += "add i32 "+str(val1)+", "+str(val2)+"\n"
     
+    def sub(self, val1, val2):
+        self.main_text += "sub i32 "+str(val1)+", "+str(val2)+"\n"
+    
+    def div(self, val1, val2):
+        self.main_text += "udiv i32 "+str(val1)+", "+str(val2)+"\n"
+    
+    def div_double(self, val1, val2):
+        self.main_text += "fdiv double "+str(val1)+", "+str(val2)+"\n"
+
+    def sub_double(self, val1, val2):
+        self.main_text += "fsub double "+str(val1)+", "+str(val2)+"\n"
+    
     def declare_double(self, id):
         self.main_text += "%"+id+" = alloca double\n"
     
