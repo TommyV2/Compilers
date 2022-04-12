@@ -1,6 +1,6 @@
 import sys
 from antlr4 import *
-from sqlalchemy import true
+# from sqlalchemy import true
 from dist.MyGrammerLexer import MyGrammerLexer
 from dist.MyGrammerParser import MyGrammerParser
 from dist.MyGrammerVisitor import MyGrammerVisitor
@@ -30,6 +30,22 @@ class MyVisitor(MyGrammerVisitor):
     def visitParenExpr(self, ctx):
         return self.visit(ctx.expr())
 
+    def visitArrayExpr(self, ctx):
+        elements = ctx.getText()[1:-1]
+        list = elements.split(",")
+        return list
+
+    def visitPrintArrayAccessExpr(self, ctx):
+        accessor = ctx.value.text
+        open_index = accessor.find('[')
+        close_index = accessor.find(']')
+        variable = accessor[:open_index]
+        index = accessor[open_index+1:close_index]
+        try:
+            return  self.dict[variable][int(index)]
+        except IndexError:
+            return "Index out of range"
+
     def visitReadExpr(self, ctx):
         var_name = self.visit(ctx.value)
         input_value = input(f"Input value for '{var_name}': ")
@@ -43,6 +59,17 @@ class MyVisitor(MyGrammerVisitor):
         value = ctx.value.text[1:-1]
         llvm_generator.print(value)
         return value
+
+    def visitArrayAccessorExpr(self, ctx):
+        accessor = ctx.getText()
+        open_index = accessor.find('[')
+        close_index = accessor.find(']')
+        variable = accessor[:open_index]
+        index = accessor[open_index + 1:close_index]
+        try:
+            return self.dict[variable][int(index)]
+        except IndexError:
+            return "Index out of range"
     
     def visitPrintVariableExpr(self, ctx):
         try:
@@ -51,6 +78,9 @@ class MyVisitor(MyGrammerVisitor):
             return value
         except KeyError:
             return "Variable not defined: " + ctx.value.text
+
+    def visitAssignArrayExpr(self, ctx):
+        print("dupa")
 
     def visitAssignExpr(self, ctx):
         variable_name = self.visit(ctx.left)
@@ -107,7 +137,7 @@ class MyVisitor(MyGrammerVisitor):
             elif op == '/':
                 llvm_generator.div_double(float(l), float(r))
         else:
-            if op == '+':
+            if op == '+' and l.isdigit() and r.isdigit():
                 llvm_generator.add(int(l),int(r))
             elif op == '*':
                 llvm_generator.mult_double(float(l), float(l))
