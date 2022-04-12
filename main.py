@@ -30,21 +30,9 @@ class MyVisitor(MyGrammerVisitor):
     def visitParenExpr(self, ctx):
         return self.visit(ctx.expr())
 
-    def visitArrayExpr(self, ctx):
-        elements = ctx.getText()[1:-1]
-        list = elements.split(",")
-        return list
-
     def visitPrintArrayAccessExpr(self, ctx):
-        accessor = ctx.value.text
-        open_index = accessor.find('[')
-        close_index = accessor.find(']')
-        variable = accessor[:open_index]
-        index = accessor[open_index+1:close_index]
-        try:
-            return  self.dict[variable][int(index)]
-        except IndexError:
-            return "Index out of range"
+        value = self.visit(ctx.value)
+        return value
 
     def visitReadExpr(self, ctx):
         var_name = self.visit(ctx.value)
@@ -60,16 +48,24 @@ class MyVisitor(MyGrammerVisitor):
         llvm_generator.print(value)
         return value
 
-    def visitArrayAccessorExpr(self, ctx):
-        accessor = ctx.getText()
-        open_index = accessor.find('[')
-        close_index = accessor.find(']')
-        variable = accessor[:open_index]
-        index = accessor[open_index + 1:close_index]
+    def visitPrintExpr(self, ctx):
+        return self.visit(ctx.value)
+
+    def visitArrayAccessExpr(self, ctx):
+        variable = ctx.var.text
+        index = ctx.index.text
         try:
-            return self.dict[variable][int(index)]
+            value = self.dict[variable][int(index)]
+            if value.startswith("\""):
+                return value[1:-1]
+            return value
         except IndexError:
             return "Index out of range"
+
+    def visitArrayElementAssignmentExpr(self, ctx):
+        variable = ctx.var.text
+        index = ctx.index.text
+        return variable, index
     
     def visitPrintVariableExpr(self, ctx):
         try:
@@ -78,9 +74,6 @@ class MyVisitor(MyGrammerVisitor):
             return value
         except KeyError:
             return "Variable not defined: " + ctx.value.text
-
-    def visitAssignArrayExpr(self, ctx):
-        print("dupa")
 
     def visitAssignExpr(self, ctx):
         variable_name = self.visit(ctx.left)
@@ -92,6 +85,18 @@ class MyVisitor(MyGrammerVisitor):
         else:
             llvm_generator.declare(variable_name)
             llvm_generator.assign(variable_name, value)
+
+    def visitArrayExpr(self, ctx):
+        return self.visit(ctx.elems)
+
+    def visitArrayElemsExpr(self, ctx):
+        items = ctx.getText()
+        return items.split(',')
+
+    def visitAssignArrayElementExpr(self, ctx):
+        value = self.visit(ctx.right)
+        variable, index = self.visit(ctx.left)
+        self.dict[variable][int(index)] = value
 
     def visitInfixExpr(self, ctx):
         l = self.visit(ctx.left)
