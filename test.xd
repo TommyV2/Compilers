@@ -1,9 +1,11 @@
-function fun
+function fun # nie obsłuje jeszcze argumentów, na słowo honory
     ala = 10.5 * 2
     return ala
 end
 
-print ala
+print ala # tu się wywali w llvm (ala jest dostępna lokalnie w fun)
 x = fun
 print x
 exit
+
+# brakuje if statement do całoście
