@@ -1,4 +1,5 @@
 import sys
+from xmlrpc.client import boolean
 from antlr4 import *
 # from sqlalchemy import true
 from dist.MyGrammerLexer import MyGrammerLexer
@@ -9,7 +10,12 @@ from llvm_generator import LLVMGenerator
 llvm_generator = LLVMGenerator()
 
 class MyVisitor(MyGrammerVisitor):
-    dict = {}
+    dict = {} # for variables
+    global_names = {}
+    functions = {}
+    local_names = {}
+    is_global = True
+    current_function = None
 
     def visitNumberExpr(self, ctx):
         value = ctx.getText()
@@ -25,6 +31,8 @@ class MyVisitor(MyGrammerVisitor):
 
     def visitVariableExpr(self, ctx):
         value = ctx.getText()
+        if value in self.functions:
+            llvm_generator.call(value)
         return value
 
     def visitParenExpr(self, ctx):
@@ -38,9 +46,15 @@ class MyVisitor(MyGrammerVisitor):
         var_name = self.visit(ctx.value)
         input_value = input(f"Input value for '{var_name}': ")
         if input_value.isdigit():
-            self.dict[var_name] = float(input_value)
+            if var_name in self.global_names:
+                self.global_names[var_name] = float(input_value)
+            else:
+                self.local_names[var_name] = float(input_value)
         else:
-            self.dict[var_name] = input_value
+            if var_name in self.global_names:
+                self.global_names[var_name] = input_value
+            else:
+                self.local_names[var_name] = input_value
         llvm_generator.scanf(input_value)
 
     def visitPrintStringExpr(self, ctx):
@@ -55,7 +69,12 @@ class MyVisitor(MyGrammerVisitor):
         variable = ctx.var.text
         index = ctx.index.text
         try:
-            value = self.dict[variable][int(index)]
+            value = None
+            if variable in self.global_names:
+                value = self.global_names[variable][int(index)]
+            else:
+                value = self.local_names[variable][int(index)]
+            # value = self.dict[variable][int(index)]
             if value.startswith("\""):
                 return value[1:-1]
             return value
@@ -69,7 +88,13 @@ class MyVisitor(MyGrammerVisitor):
     
     def visitPrintVariableExpr(self, ctx):
         try:
-            value = self.dict[ctx.value.text]
+            var = ctx.value.text
+            value = None
+            if var in self.global_names:
+                value = self.global_names[var]
+            else:
+                value = self.local_names[var]
+            # value = self.dict[ctx.value.text]
             llvm_generator.print(value)
             return value
         except KeyError:
@@ -78,13 +103,27 @@ class MyVisitor(MyGrammerVisitor):
     def visitAssignExpr(self, ctx):
         variable_name = self.visit(ctx.left)
         value = self.visit(ctx.right)
-        self.dict[variable_name] = value
-        if '.' in str(value):
-            llvm_generator.declare_double(variable_name)
-            llvm_generator.assign_double(variable_name, value)
+        sign = '%'
+        if self.is_global:
+            if variable_name not in self.global_names:
+                sign = '%'
+                self.global_names[variable_name] = value
+            else:
+                return f"Global variable {variable_name} already defined!"
+        else:
+            if variable_name not in self.local_names:
+                self.local_names[variable_name] = value
+            else:
+                return f"Local variable {variable_name} already defined!"
+
+        if '.' in str(value): 
+            llvm_generator.declare_double(variable_name, sign)
+            llvm_generator.assign_double(variable_name, value, sign)
+            llvm_generator.load_double(variable_name, sign)                
         else:
             llvm_generator.declare(variable_name)
             llvm_generator.assign(variable_name, value)
+            llvm_generator.load(variable_name)
 
     def visitArrayExpr(self, ctx):
         return self.visit(ctx.elems)
@@ -96,7 +135,11 @@ class MyVisitor(MyGrammerVisitor):
     def visitAssignArrayElementExpr(self, ctx):
         value = self.visit(ctx.right)
         variable, index = self.visit(ctx.left)
-        self.dict[variable][int(index)] = value
+        if variable in self.global_names:
+            self.global_names[variable][int(index)] = value
+        else:
+            self.local_names[variable][int(index)] = value
+        # self.dict[variable][int(index)] = value
 
     def visitInfixExpr(self, ctx):
         l = self.visit(ctx.left)
@@ -106,11 +149,19 @@ class MyVisitor(MyGrammerVisitor):
         r_is_float = True
 
         try:
-            l = self.dict[l]  
+            if l in self.global_names:
+                l = self.global_names[l]
+            else:
+                l = self.local_names[l]
+            # l = self.dict[l]  
         except:
             pass    
         try:
-            r = self.dict[r]  
+            if r in self.global_names:
+                r = self.global_names[r]
+            else:
+                r = self.local_names[r]
+            # r = self.dict[r]  
         except:
             pass   
         
@@ -159,6 +210,27 @@ class MyVisitor(MyGrammerVisitor):
         print('-------------------------------------')
         print(llvm_generator.generate())
         sys.exit(0)
+
+    def visitFunctionStartExpr(self, ctx):
+        self.is_global = False
+        id = ctx.left.text
+        self.functions[id] = ''
+        self.current_function = id
+        llvm_generator.function_start(id)
+
+    def visitFunctionReturnExpr(self, ctx):
+        name = self.visit(ctx.left)
+        llvm_generator.return_var = name
+        self.functions[self.current_function] = name
+
+
+    def visitFunctionEndExpr(self, ctx):
+        llvm_generator.assign(self.current_function, self.functions[self.current_function], '%')
+        llvm_generator.load(self.current_function)
+        llvm_generator.function_end(self.functions[self.current_function])
+        self.local_names.clear()
+        self.is_global = True
+            
 
 def execute_command(data):
     # lexer

@@ -1,5 +1,9 @@
-2 + 2
-3 * 3
-read 100
-print 99.99
+function fun
+    ala = 10.5 * 2
+    return ala
+end
+
+print ala
+x = fun
+print x
 exit
